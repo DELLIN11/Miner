@@ -1,9 +1,10 @@
 from random import sample, choice
-import sys
+import sys,inspect, os.path
 
 import pygame
 pygame.init()
 
+# Класс Bomb наследуется от класса cell
 
 SIZE = 600, 650
 CELL_WIDTH = 60
@@ -15,9 +16,9 @@ WIN = 1
 DEFEAT = 2
 
 screen = pygame.display.set_mode(SIZE)
-pygame.display.set_caption("Sapper")
+pygame.display.set_caption("Miner")
 clock = pygame.time.Clock()
-
+filename = inspect.getframeinfo(inspect.currentframe()).filename
 game_over = False
 
 
@@ -143,7 +144,14 @@ class Cell:
             near_cells.append(self.cells[index + 11])
 
         return near_cells
+    
 
+    # Наследование (от класса Cell)
+
+class BombCell(Cell):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.color = (255, 0, 0)
 
 def create_field():
     Cell.cells = []
@@ -214,18 +222,19 @@ while True:
     else:
         game_over = WIN
 
-    for cel in Cell.cells:
+    for cel in BombCell.cells:
         cel.draw()
     draw_interface()
 
     if game_over == WIN:
-        text = "Вы победили!"
+        text = ":) Вы победили!"
         follow = FONT50.render(text, True, (0, 0, 0))
-        screen.blit(follow, (160, SIZE[1] - 42))
+        screen.blit(follow, (160, SIZE[1] - 44))
     elif game_over == DEFEAT:
-        text = "Вы проиграли!"
+        text = ":( Вы проиграли!"
         follow = FONT50.render(text, True, (0, 0, 0))
-        screen.blit(follow, (160, SIZE[1] - 42))
+        screen.blit(follow, (150, SIZE[1] - 44))
+        
 
     pygame.display.update()
     clock.tick(30)
