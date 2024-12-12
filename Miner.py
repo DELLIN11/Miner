@@ -1,8 +1,17 @@
 from random import sample, choice
 import sys,inspect, os.path
-
+import logging
 import pygame
 pygame.init()
+
+logging.basicConfig(
+    filename="./logging.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s- %(levelname)s",
+    encoding="utf-8"
+)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Класс Bomb наследуется от класса cell
 
@@ -57,10 +66,12 @@ class Cell:
                         self.boom()
                     else:
                         self.open()
+                        logger.info(f"Ячейка в ({self.x}, {self.y}) {'бомба' if self.bomb else 'открыта'}")
                     return True
 
                 elif buttons[2]:
                     self.set_label()
+                    logger.info(f"Метка установлена ​​на ({self.x}, {self.y}): {self.label}")
 
     def open(self):
         if self.label:
@@ -84,6 +95,7 @@ class Cell:
         self.color = (255, 0, 0)
         self.color_border = (0, 0, 0)
         self.opened = True
+        logger.error(f"Бум! Ячейка в ({self.x}, {self.y}) была бомбой.")
 
     def set_label(self):
         if not self.label:
@@ -158,12 +170,14 @@ def create_field():
     for x in range(0, SIZE[0], CELL_WIDTH):
         for y in range(0, SIZE[1] - 50, CELL_WIDTH):
             Cell(x, y)
+        logger.info("Поле создано.")
+            
 
 
 def create_bomb():
     for cell in sample(Cell.cells, k=BOMBS_COUNT):
         cell.bomb = True
-
+        logger.info(f"{BOMBS_COUNT} бомбы размещены.")
 
 def count_labels():
     count = 0
@@ -204,6 +218,7 @@ create_bomb()
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            logger.info("Игра закрыта игроком.")
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             for cel in Cell.cells:
@@ -215,12 +230,14 @@ while True:
             Cell.cells = []
             create_field()
             create_bomb()
+            logger.info("Игра началась.")
 
     for cel in Cell.cells:
         if not cel.opened and not cel.bomb:
             break
     else:
         game_over = WIN
+        logger.info("Игра окончена: Победа.")
 
     for cel in BombCell.cells:
         cel.draw()
@@ -235,6 +252,6 @@ while True:
         follow = FONT50.render(text, True, (0, 0, 0))
         screen.blit(follow, (150, SIZE[1] - 44))
         
-
+    
     pygame.display.update()
     clock.tick(30)
